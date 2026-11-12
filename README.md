@@ -137,6 +137,20 @@ SMTP_FROM=your@email.com
 ```
 
 Users can opt in from their **Profile** page. If `SMTP_HOST` is not configured, the weekly job is skipped silently.
+
+### HTTPS and session cookies
+
+By default, session cookies are set with `Secure=True`, meaning the browser will **only send them over HTTPS**. On a plain HTTP deployment, login will appear to succeed but the session won't persist — causing a redirect loop back to the login page.
+
+**If you deploy behind a reverse proxy (nginx, Traefik, …)**, make sure it forwards the `X-Forwarded-Proto: https` header. The app uses `ProxyFix` and trusts one hop.
+
+**If you deploy over plain HTTP** (e.g. local testing without a proxy), set this in your `.env`:
+
+```env
+SESSION_COOKIE_SECURE=false
+```
+
+> ⚠️ Only disable this on trusted local networks. Never use `false` on a public deployment.
 There is no `credentials.json` file. Device credentials are generated per user at registration and stored in the database. You can download your own credentials as `tricount_credentials.json` from your **Profile** page — this file is compatible with the [`tricount-api`](https://github.com/elrandar/tricount-api) Python package. If lost, generate new credentials from your profile and re-join your tricounts using their sharing tokens.
 
 ## Profile

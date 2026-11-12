@@ -68,6 +68,14 @@ Open [http://localhost:5000](http://localhost:5000) and register the first accou
 
 Use `docker-compose.proxy.yml` from the `deploy/` folder, or add your own network config. Place behind nginx, Traefik or Caddy with HTTPS.
 
+> ⚠️ **Session cookies require HTTPS.** By default, `SESSION_COOKIE_SECURE=true` — browsers will only send the session cookie over HTTPS. If you deploy over plain HTTP (e.g. local testing), add this to your `.env`:
+>
+> ```env
+> SESSION_COOKIE_SECURE=false
+> ```
+>
+> When using a reverse proxy, make sure it forwards `X-Forwarded-Proto: https`. Never disable secure cookies on a public deployment.
+
 ## Data
 
 All data is stored in the mounted `./data/` directory:

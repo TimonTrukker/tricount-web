@@ -356,6 +356,10 @@ def cache_get(key: str):
 
 
 def cache_set(key: str, value):
+    if len(_cache) > 500:
+        oldest = sorted(_cache, key=lambda k: _cache[k][0])[:100]
+        for k in oldest:
+            _cache.pop(k, None)
     _cache[key] = (datetime.now(), value)
 
 
@@ -387,6 +391,10 @@ def get_tricount_cached(client, token: str, user_id: int):
 _client_cache: dict[int, tc.TricountAPI] = {}
 
 
+class TricountAuthError(Exception):
+    pass
+
+
 def get_client():
     user_id = current_user.id
     if user_id in _client_cache:
@@ -396,7 +404,12 @@ def get_client():
         raise RuntimeError("Geen Tricount credentials gevonden. Genereer ze via je profiel.")
     creds = tc.Credentials(**json.loads(row["credentials_json"]))
     client = tc.TricountAPI(creds)
-    client.authenticate()
+    try:
+        client.authenticate()
+    except Exception as e:
+        if "401" in str(e):
+            raise TricountAuthError("401")
+        raise
     _client_cache[user_id] = client
     return client
 
@@ -1030,6 +1043,14 @@ def profile_delete():
     return redirect(url_for("login"))
 
 
+@app.route("/profile/credentials/regenerate", methods=["POST"])
+@login_required
+def profile_credentials_regenerate():
+    generate_user_credentials(current_user.id)
+    flash(_("Credentials regenerated"), "success")
+    return redirect(url_for("index"))
+
+
 @app.route("/profile/credentials.json")
 @login_required
 def profile_credentials():
@@ -1135,7 +1156,14 @@ def index():
     )
     label_colors = {row["name"]: row["color"] for row in label_rows}
     labels = [dict(row) for row in label_rows]
-    return render_template("index.html", tokens=tokens, label_colors=label_colors, labels=labels)
+    auth_error = False
+    try:
+        get_client()
+    except TricountAuthError:
+        auth_error = True
+    except Exception:
+        pass
+    return render_template("index.html", tokens=tokens, label_colors=label_colors, labels=labels, auth_error=auth_error)
 
 
 @app.route("/api/tricounts")
@@ -1150,6 +1178,15 @@ def api_tricounts():
     )
     try:
         client = get_client()
+    except TricountAuthError:
+
+        def err_gen():
+            yield f"data: {json.dumps({'type': 'auth_error', 'done': 0, 'total': 0})}\n\n"
+            yield 'data: {"type": "done"}\n\n'
+
+        return Response(
+            err_gen(), mimetype="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+        )
     except Exception as e:
         app.logger.error("Failed to get client: %s", e)
 

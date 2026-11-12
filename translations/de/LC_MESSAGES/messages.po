@@ -875,3 +875,12 @@ msgstr "Ausgabe"
 
 msgid "Synced"
 msgstr "Synchronisiert"
+
+msgid "Tricount connection blocked"
+msgstr "Tricount-Verbindung gesperrt"
+
+msgid "Tricount 401 hint"
+msgstr "Deine Anmeldedaten wurden von Tricount gesperrt. Generiere neue, um die Verbindung wiederherzustellen. Deine Tricounts bleiben erhalten."
+
+msgid "Credentials regenerated"
+msgstr "Neue Anmeldedaten generiert!"

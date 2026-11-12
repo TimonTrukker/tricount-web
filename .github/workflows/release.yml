@@ -58,9 +58,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update VERSION file
-        run: echo "${{ steps.semver.outputs.next }}" > VERSION
-
       - name: Publish release
         uses: release-drafter/release-drafter@v7
         id: release_published
@@ -70,13 +67,6 @@ jobs:
           publish: true
           tag: ${{ steps.semver.outputs.next }}
           name: ${{ steps.semver.outputs.next }}
-
-      - name: Commit VERSION file
-        uses: EndBug/add-and-commit@v11
-        with:
-          message: "chore: bump version to ${{ steps.semver.outputs.next }}"
-          pull_strategy: rebase
-          push_attempts: 3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -92,6 +82,7 @@ jobs:
         with:
           context: .
           push: true
+          build-args: VERSION=${{ steps.semver.outputs.next }}
           tags: |
             ${{ github.repository }}:latest
             ${{ github.repository }}:${{ steps.semver.outputs.next }}

@@ -14,7 +14,11 @@ RUN curl -fsSL https://github.com/tailwindlabs/tailwindcss/releases/download/v3.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+ARG VERSION=dev
+
 COPY . .
+
+RUN echo "$VERSION" > VERSION
 
 RUN tailwindcss -i static/css/app.css -o static/css/tailwind.css --minify
 RUN pybabel compile -d translations

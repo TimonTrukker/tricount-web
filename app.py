@@ -386,6 +386,45 @@ def get_tricount_cached(client, token: str, user_id: int):
     return t
 
 
+def calculate_tricount_balances(tricount: tc.Tricount) -> dict[str, float]:
+    """Calculate member balances, reversing income amounts and their allocations."""
+    balances = {member.display_name: 0.0 for member in tricount.members}
+
+    for tx in tricount.transactions:
+        if tx.status.value != "ACTIVE":
+            continue
+
+        owner = tricount.get_member_by_uuid(tx.membership_uuid_owner)
+        if not owner:
+            continue
+
+        amount = abs(float(tx.amount.value))
+        transaction_type = tx.transaction_type.value
+
+        if transaction_type == "BALANCE":
+            balances[owner.display_name] += amount
+            for allocation in tx.allocations:
+                allocated_amount = abs(float(allocation.amount.value))
+                if allocated_amount > 0:
+                    member = tricount.get_member_by_uuid(allocation.membership_uuid)
+                    if member:
+                        balances[member.display_name] -= allocated_amount
+        elif transaction_type == "INCOME":
+            balances[owner.display_name] -= amount
+            for allocation in tx.allocations:
+                member = tricount.get_member_by_uuid(allocation.membership_uuid)
+                if member:
+                    balances[member.display_name] += abs(float(allocation.amount.value))
+        else:
+            balances[owner.display_name] += amount
+            for allocation in tx.allocations:
+                member = tricount.get_member_by_uuid(allocation.membership_uuid)
+                if member:
+                    balances[member.display_name] -= abs(float(allocation.amount.value))
+
+    return balances
+
+
 # --- Tricount client ---
 
 _client_cache: dict[int, tc.TricountAPI] = {}
@@ -596,7 +635,7 @@ def send_weekly_emails(user_id: int | None = None):
         for tok in tokens:
             try:
                 t = client.join_tricount(tok["token"])
-                balances = client.get_balances(t)
+                balances = calculate_tricount_balances(t)
                 my_balance = None
                 if tok["member_uuid"]:
                     member = t.get_member_by_uuid(tok["member_uuid"])
@@ -1543,7 +1582,7 @@ def api_tricount(token):
         try:
             yield f"data: {json.dumps({'type': 'status', 'message': _('Loading')})}\n\n"
             t = get_tricount_cached(client, token, uid)
-            balances = client.get_balances(t)
+            balances = calculate_tricount_balances(t)
 
             members = [{"uuid": m.uuid, "name": m.display_name} for m in t.members]
             transactions = []

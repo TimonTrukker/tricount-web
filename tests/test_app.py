@@ -4,6 +4,7 @@ import sqlite3
 import tempfile
 from datetime import date, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pyotp
@@ -1020,3 +1021,94 @@ def test_recurring_toggle_other_user_ignored(client, db):
     client.post(f"/tricount/tOTHER/recurring/{rec_id}/toggle", follow_redirects=True)
     row = db.execute("SELECT active FROM recurring_expenses WHERE id = ?", (rec_id,)).fetchone()
     assert row["active"] == 1  # ongewijzigd
+
+
+def _balance_test_tricount(member_names, transactions):
+    members = [SimpleNamespace(uuid=member_uuid, display_name=name) for member_uuid, name in member_names.items()]
+    members_by_uuid = {member.uuid: member for member in members}
+    return SimpleNamespace(
+        members=members,
+        transactions=transactions,
+        get_member_by_uuid=members_by_uuid.get,
+    )
+
+
+def _balance_test_transaction(transaction_type, owner_uuid, amount, allocations, status="ACTIVE"):
+    return SimpleNamespace(
+        transaction_type=SimpleNamespace(value=transaction_type),
+        status=SimpleNamespace(value=status),
+        membership_uuid_owner=owner_uuid,
+        amount=SimpleNamespace(value=str(amount)),
+        allocations=[
+            SimpleNamespace(membership_uuid=member_uuid, amount=SimpleNamespace(value=str(allocated_amount)))
+            for member_uuid, allocated_amount in allocations
+        ],
+    )
+
+
+def test_normal_expense_balance_is_unchanged():
+    tricount = _balance_test_tricount(
+        {"alice": "Alice", "bob": "Bob"},
+        [_balance_test_transaction("NORMAL", "alice", -100, [("alice", -40), ("bob", -60)])],
+    )
+
+    balances = application.calculate_tricount_balances(tricount)
+
+    assert balances == {"Alice": 60, "Bob": -60}
+    assert sum(balances.values()) == pytest.approx(0, abs=0.01)
+
+
+def test_balance_transaction_signs_are_unchanged():
+    tricount = _balance_test_tricount(
+        {"alice": "Alice", "bob": "Bob"},
+        [_balance_test_transaction("BALANCE", "alice", 25, [("bob", 25)])],
+    )
+
+    balances = application.calculate_tricount_balances(tricount)
+
+    assert balances == {"Alice": 25, "Bob": -25}
+
+
+def test_income_is_allocated_across_multiple_members():
+    tricount = _balance_test_tricount(
+        {"alice": "Alice", "bob": "Bob", "carol": "Carol"},
+        [_balance_test_transaction("INCOME", "alice", 100, [("alice", 20), ("bob", 30), ("carol", 50)])],
+    )
+
+    balances = application.calculate_tricount_balances(tricount)
+
+    assert balances == {"Alice": -80, "Bob": 30, "Carol": 50}
+    assert sum(balances.values()) == pytest.approx(0, abs=0.01)
+
+
+def test_income_receiver_can_differ_from_allocated_members():
+    tricount = _balance_test_tricount(
+        {"receiver": "Receiver", "alice": "Alice", "bob": "Bob"},
+        [_balance_test_transaction("INCOME", "receiver", 100, [("alice", 30), ("bob", 70)])],
+    )
+
+    balances = application.calculate_tricount_balances(tricount)
+
+    assert balances == {"Receiver": -100, "Alice": 30, "Bob": 70}
+    assert sum(balances.values()) == pytest.approx(0, abs=0.01)
+
+    debtors = [[name, -balance] for name, balance in balances.items() if balance < -0.01]
+    creditors = [[name, balance] for name, balance in balances.items() if balance > 0.01]
+    payments = []
+    debtor_index = creditor_index = 0
+    while debtor_index < len(debtors) and creditor_index < len(creditors):
+        payment = min(debtors[debtor_index][1], creditors[creditor_index][1])
+        payments.append((debtors[debtor_index][0], creditors[creditor_index][0], payment))
+        debtors[debtor_index][1] -= payment
+        creditors[creditor_index][1] -= payment
+        if debtors[debtor_index][1] < 0.01:
+            debtor_index += 1
+        if creditors[creditor_index][1] < 0.01:
+            creditor_index += 1
+
+    assert payments == [("Receiver", "Alice", 30), ("Receiver", "Bob", 70)]
+    settled_balances = balances.copy()
+    for debtor, creditor, payment in payments:
+        settled_balances[debtor] += payment
+        settled_balances[creditor] -= payment
+    assert all(abs(balance) < 0.01 for balance in settled_balances.values())

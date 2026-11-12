@@ -1,0 +1,21 @@
+services:
+  tricount-web:
+    image: geertmeersman/tricount-web:latest
+    container_name: tricount-web
+    restart: unless-stopped
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - tricount_data:/app/data
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  tricount_data:
+    external: true

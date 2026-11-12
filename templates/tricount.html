@@ -244,6 +244,7 @@ const _t = {
   confirmDelete:      {{ _("Confirm delete selected") | tojson }},
   reimbursement:      {{ _("Reimbursement") | tojson }},
   expense:            {{ _("Expense") | tojson }},
+  income:             {{ _("Income") | tojson }},
   filterByType:       {{ _("Filter by type") | tojson }},
   biggestExpense:     {{ _("Biggest expense") | tojson }},
   avgExpense:         {{ _("Average expense") | tojson }},
@@ -286,22 +287,22 @@ document.getElementById('filterMeBtn').addEventListener('click', function() {
   filterTransactions(document.getElementById('txSearch').value);
 });
 document.getElementById('filterTypeBtn').addEventListener('click', function() {
-  const cycle = [null, 'BALANCE', 'NORMAL'];
+  const cycle = [null, 'BALANCE', 'NORMAL', 'INCOME'];
   const idx = cycle.indexOf(_filterType);
   _filterType = cycle[(idx + 1) % cycle.length];
   this.style.backgroundColor = _filterType !== null ? '#eff6ff' : '';
-  this.title = _filterType === 'BALANCE' ? _t.reimbursement : _filterType === 'NORMAL' ? _t.expense : _t.filterByType;
+  this.title = _filterType === 'BALANCE' ? _t.reimbursement
+    : _filterType === 'NORMAL' ? _t.expense
+    : _filterType === 'INCOME' ? _t.income
+    : _t.filterByType;
   const icon = document.getElementById('filterTypeIcon');
-  if (_filterType === 'BALANCE') {
-    icon.style.stroke = '#2563eb';
-    icon.innerHTML = '<polyline points="17 1 21 5 17 9"/><line x1="21" y1="5" x2="3" y2="5"/><polyline points="7 23 3 19 7 15"/><line x1="3" y1="19" x2="21" y2="19"/>';
-  } else if (_filterType === 'NORMAL') {
-    icon.style.stroke = '#2563eb';
-    icon.innerHTML = '<text x="12" y="18" text-anchor="middle" font-size="18" font-weight="bold" stroke="none" fill="#2563eb">€</text>';
-  } else {
-    icon.style.stroke = '';
-    icon.innerHTML = '<polyline points="17 1 21 5 17 9"/><line x1="21" y1="5" x2="3" y2="5"/><polyline points="7 23 3 19 7 15"/><line x1="3" y1="19" x2="21" y2="19"/>';
-  }
+  const indicators = {
+    BALANCE: '<polyline points="17 1 21 5 17 9"/><line x1="21" y1="5" x2="3" y2="5"/><polyline points="7 23 3 19 7 15"/><line x1="3" y1="19" x2="21" y2="19"/>',
+    NORMAL: '<text x="12" y="18" text-anchor="middle" font-size="18" font-weight="bold" stroke="none" fill="#2563eb">€</text>',
+    INCOME: '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>'
+  };
+  icon.style.stroke = _filterType !== null ? '#2563eb' : '';
+  icon.innerHTML = indicators[_filterType] || '<polyline points="17 1 21 5 17 9"/><line x1="21" y1="5" x2="3" y2="5"/><polyline points="7 23 3 19 7 15"/><line x1="3" y1="19" x2="21" y2="19"/>';
   filterTransactions(document.getElementById('txSearch').value);
 });
 document.getElementById('selectAllCheckbox').addEventListener('change', function() {

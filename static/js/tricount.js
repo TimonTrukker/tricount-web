@@ -15,7 +15,7 @@ function renderTxRow(tx, involved = false) {
   const typeIcon = isBalance
     ? `<span title="${h(_t.reimbursement)}" class="text-green-500 mr-1"><svg xmlns='http://www.w3.org/2000/svg' class='w-3.5 h-3.5 inline' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='17 1 21 5 17 9'/><line x1='21' y1='5' x2='3' y2='5'/><polyline points='7 23 3 19 7 15'/><line x1='3' y1='19' x2='21' y2='19'/></svg></span>`
     : isIncome
-    ? `<span title="${h(_t.expense)}" class="text-blue-500 mr-1"><svg xmlns='http://www.w3.org/2000/svg' class='w-3.5 h-3.5 inline' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><line x1='12' y1='19' x2='12' y2='5'/><polyline points='5 12 12 5 19 12'/></svg></span>`
+    ? `<span title="${h(_t.income)}" class="text-blue-500 mr-1"><svg xmlns='http://www.w3.org/2000/svg' class='w-3.5 h-3.5 inline' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><line x1='12' y1='19' x2='12' y2='5'/><polyline points='5 12 12 5 19 12'/></svg></span>`
     : '';
   const hasLinked = _tricountData && _tricountData.linked_uuid;
   const gridCols = hasLinked ? 'grid-cols-[5.5rem_1fr_8rem_6rem_6rem]' : 'grid-cols-[5.5rem_1fr_8rem_7rem]';

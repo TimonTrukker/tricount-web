@@ -873,6 +873,9 @@ msgstr "Terugbetaling"
 msgid "Expense"
 msgstr "Uitgave"
 
+msgid "Income"
+msgstr "Inkomsten"
+
 msgid "Synced"
 msgstr "Gesynchroniseerd"
 

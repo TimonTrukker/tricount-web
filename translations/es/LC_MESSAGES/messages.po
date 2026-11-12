@@ -873,6 +873,9 @@ msgstr "Reembolso"
 msgid "Expense"
 msgstr "Gasto"
 
+msgid "Income"
+msgstr "Ingreso"
+
 msgid "Synced"
 msgstr "Sincronizado"
 

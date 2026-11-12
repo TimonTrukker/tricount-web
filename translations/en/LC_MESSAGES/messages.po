@@ -878,3 +878,12 @@ msgstr "Expense"
 
 msgid "Synced"
 msgstr "Synced"
+
+msgid "Tricount connection blocked"
+msgstr "Tricount connection blocked"
+
+msgid "Tricount 401 hint"
+msgstr "Your credentials have been blocked by Tricount. Regenerate them to reconnect. Your tricounts will be kept."
+
+msgid "Credentials regenerated"
+msgstr "New credentials generated!"

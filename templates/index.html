@@ -42,6 +42,19 @@
   </div>
 </div>
 
+{% if auth_error %}
+<div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl p-4 mb-4 flex items-start gap-3">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div class="flex-1">
+    <p class="text-sm font-medium text-red-700 dark:text-red-300">{{ _("Tricount connection blocked") }}</p>
+    <p class="text-xs text-red-500 dark:text-red-400 mt-0.5">{{ _("Tricount 401 hint") }}</p>
+    <form method="POST" action="{{ url_for('profile_credentials_regenerate') }}" class="mt-2">
+      <button class="bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg">{{ _("Regenerate credentials") }}</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
 <div id="addForm" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow p-4 mb-4">
   <form method="POST" action="{{ url_for('add_tricount') }}" class="space-y-2">
     <input type="text" name="token" placeholder="{{ _('Token placeholder') }}" required

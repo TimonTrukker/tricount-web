@@ -875,3 +875,12 @@ msgstr "Dépense"
 
 msgid "Synced"
 msgstr "Synchronisé"
+
+msgid "Tricount connection blocked"
+msgstr "Connexion Tricount bloquée"
+
+msgid "Tricount 401 hint"
+msgstr "Vos identifiants ont été bloqués par Tricount. Régénérez-les pour vous reconnecter. Vos tricounts seront conservés."
+
+msgid "Credentials regenerated"
+msgstr "Nouveaux identifiants générés !"

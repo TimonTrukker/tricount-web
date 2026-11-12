@@ -875,3 +875,12 @@ msgstr "Gasto"
 
 msgid "Synced"
 msgstr "Sincronizado"
+
+msgid "Tricount connection blocked"
+msgstr "Conexión Tricount bloqueada"
+
+msgid "Tricount 401 hint"
+msgstr "Tus credenciales han sido bloqueadas por Tricount. Regéneralas para reconectarte. Tus tricounts se conservarán."
+
+msgid "Credentials regenerated"
+msgstr "¡Nuevas credenciales generadas!"

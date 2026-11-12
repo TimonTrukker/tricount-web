@@ -875,3 +875,12 @@ msgstr "Uitgave"
 
 msgid "Synced"
 msgstr "Gesynchroniseerd"
+
+msgid "Tricount connection blocked"
+msgstr "Tricount-verbinding geblokkeerd"
+
+msgid "Tricount 401 hint"
+msgstr "Je credentials zijn geblokkeerd door Tricount. Genereer nieuwe om opnieuw verbinding te maken. Je tricounts blijven bewaard."
+
+msgid "Credentials regenerated"
+msgstr "Nieuwe credentials gegenereerd!"

@@ -67,7 +67,7 @@ babel.init_app(app, locale_selector=get_locale)
 @app.context_processor
 def inject_now():
     try:
-        version = (Path("VERSION")).read_text().strip()
+        version = (Path("VERSION")).read_text().strip() or "dev"
     except OSError:
         version = "dev"
     return {
